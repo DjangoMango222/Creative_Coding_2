@@ -13,7 +13,6 @@ let x = 0;
 let movingRight = true;
 
 function preload() {
-  // Make sure these match your folder EXACTLY
   img1 = loadImage("./Assets/images/women-image1.jpg");
   img2 = loadImage("./Assets/images/women-image2.jpg");
   imgAI = loadImage("./Assets/images/dalle-pizza.jpg");
@@ -42,14 +41,14 @@ function draw() {
   textSize(18);
   text("Django Behunin", 50, 90);
 
-  // Static images
+  //images
   if (img1) image(img1, 50, 150, 200, 200);
   if (img2) image(img2, 300, 150, 200, 200);
 
   // Moving AI image
   if (imgAI) image(imgAI, x, 420, 150, 150);
 
-  // Movement logic
+  // Movement
   if (movingRight) {
     x += 1.5;
   } else {
