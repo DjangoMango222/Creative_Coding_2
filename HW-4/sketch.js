@@ -13,37 +13,54 @@ let x = 0;
 let movingRight = true;
 
 function preload() {
-  img1 = loadImage("Assets/images/women-image1.jpg");
-  img2 = loadImage("Assets/images/women-image2.jpg");
-  imgAI = loadImage("Assets/images/dalle-pizza.jpg");
-  myFont = loadFont("Assets/fonts/PlayfulTime-BLBB8.ttf");
+  // Make sure these match your folder EXACTLY
+  img1 = loadImage("./Assets/images/women-image1.jpg");
+  img2 = loadImage("./Assets/images/women-image2.jpg");
+  imgAI = loadImage("./Assets/images/dalle-pizza.jpg");
+  myFont = loadFont("./Assets/fonts/PlayfulTime-BLBB8.ttf");
 }
 
 function setup() {
   createCanvas(800, 600);
-  textFont(myFont);   // 
+  
+  if (myFont) {
+    textFont(myFont);
+  }
+
   setInterval(changeDirection, 2000);
 }
 
 function draw() {
   background(240);
 
+  // Title
   textSize(40);
   fill(50);
   text("Everyone's favorite dish!", 50, 60);
 
+  // Name
   textSize(18);
   text("Django Behunin", 50, 90);
 
-  image(img1, 50, 150, 200, 200);
-  image(img2, 300, 150, 200, 200);
+  // Static images
+  if (img1) image(img1, 50, 150, 200, 200);
+  if (img2) image(img2, 300, 150, 200, 200);
 
-  image(imgAI, x, 420, 150, 150);
+  // Moving AI image
+  if (imgAI) image(imgAI, x, 420, 150, 150);
 
+  // Movement logic
   if (movingRight) {
-    x += 1;
+    x += 1.5;
   } else {
-    x -= 1;
+    x -= 1.5;
+  }
+
+  // Keep it inside canvas
+  if (x > width - 150) {
+    movingRight = false;
+  } else if (x < 0) {
+    movingRight = true;
   }
 }
 
