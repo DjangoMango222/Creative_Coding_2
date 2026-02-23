@@ -21,7 +21,8 @@ let foods = [];
 let score = 0;
 
 function preload() {
-  spriteSheet = loadImage("images/character.png");
+  // IMPORTANT: Capital C to match your file
+  spriteSheet = loadImage("images/Character.png");
 }
 
 function setup() {
@@ -51,7 +52,7 @@ function draw() {
     moving = true;
   }
 
-  // Animation control
+  // Animation timing
   frameCounter++;
   if (frameCounter >= frameDelay) {
     frameCounter = 0;
