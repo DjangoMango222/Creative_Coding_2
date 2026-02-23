@@ -29,7 +29,12 @@ function setup() {
     new Food(400, 300, 50, color(255, 200, 0)),
     new Food(500, 300, 25, color(255, 0, 255))
   ];
-}
+  console.log(spriteSheet.width, spriteSheet.height);
+function setup() {
+  createCanvas(600, 400);
+
+  frameHeight = spriteSheet.height / 8;
+}}
 
 function draw() {
   background(220);
