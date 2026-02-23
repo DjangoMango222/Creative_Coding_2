@@ -1,57 +1,45 @@
 let spriteSheet;
 
-let frameWidth = 32;
-let frameHeight = 50;
+let frameWidth = 64;
+let frameHeight = 128;
+let totalFrames = 10;
 
-let totalFrames = 8;
 let currentFrame = 0;
-let frameDelay = 8;
+let frameDelay = 6;
 let frameCounter = 0;
 
+let direction = 0; // 0 = right (top row), 1 = left (bottom row)
+
 let x = 200;
-let y = 250;
+let y = 200;
 let speed = 3;
 
-let foods = [];
-let score = 0;
-
 function preload() {
-  spriteSheet = loadImage("images/player.png");
+  spriteSheet = loadImage("images/player.png"); // make sure name matches
 }
 
 function setup() {
-  createCanvas(600, 400);
-
-  foods = [
-    new Food(100, 300, 30, color(255, 0, 0)),
-    new Food(200, 300, 40, color(0, 255, 0)),
-    new Food(300, 300, 35, color(0, 0, 255)),
-    new Food(400, 300, 50, color(255, 200, 0)),
-    new Food(500, 300, 25, color(255, 0, 255))
-  ];
-  console.log(spriteSheet.width, spriteSheet.height);
-function setup() {
-  createCanvas(600, 400);
-
-  frameHeight = spriteSheet.height / 8;
-}}
+  createCanvas(800, 400);
+}
 
 function draw() {
   background(220);
 
   let moving = false;
 
-  if (keyIsDown(LEFT_ARROW)) {
-    x -= speed;
-    moving = true;
-  }
-
   if (keyIsDown(RIGHT_ARROW)) {
     x += speed;
+    direction = 0; // top row
     moving = true;
   }
 
-  // Animate only if moving
+  if (keyIsDown(LEFT_ARROW)) {
+    x -= speed;
+    direction = 1; // bottom row
+    moving = true;
+  }
+
+  // Animate only when moving
   if (moving) {
     frameCounter++;
     if (frameCounter >= frameDelay) {
@@ -61,46 +49,19 @@ function draw() {
         currentFrame = 0;
       }
     }
+  } else {
+    currentFrame = 0; // idle frame
   }
 
-  // Draw frame from vertical sprite sheet
   image(
     spriteSheet,
     x,
     y,
     frameWidth,
     frameHeight,
-    0,
-    currentFrame * frameHeight,
+    currentFrame * frameWidth,   // move left to right
+    direction * frameHeight,     // choose row (0 or 1)
     frameWidth,
     frameHeight
   );
-
-  // Food collision
-  for (let i = foods.length - 1; i >= 0; i--) {
-    foods[i].display();
-
-    let d = dist(
-      x + frameWidth / 2,
-      y + frameHeight / 2,
-      foods[i].x,
-      foods[i].y
-    );
-
-    if (d < foods[i].size / 2 + frameWidth / 2) {
-      foods.splice(i, 1);
-      score++;
-    }
-  }
-
-  fill(0);
-  textSize(20);
-  textAlign(LEFT);
-  text("Score: " + score, 20, 30);
-
-  if (foods.length === 0) {
-    textSize(40);
-    textAlign(CENTER);
-    text("You Win!", width / 2, height / 2);
-  }
 }
