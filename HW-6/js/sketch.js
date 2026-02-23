@@ -28,7 +28,7 @@ let foods = [];
 let score = 0;
 
 function preload() {
-  spriteSheet = loadImage("images/character.png");
+  spriteSheet = loadImage("images/character.png"); // Make sure this exists!
 }
 
 function setup() {
