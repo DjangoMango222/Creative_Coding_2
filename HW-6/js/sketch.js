@@ -1,27 +1,21 @@
 let spriteSheet;
 
-// Sprite settings
 let frameWidth = 32;
 let frameHeight = 50;
 
-let idleStart = 0;
-let idleCount = 4;
-let walkStart = 4;
-let walkCount = 4;
-
+let totalFrames = 8;
 let currentFrame = 0;
+let frameDelay = 8;
 let frameCounter = 0;
-let frameDelay = 10;
 
 let x = 200;
 let y = 250;
-let speed = 2;
+let speed = 3;
 
 let foods = [];
 let score = 0;
 
 function preload() {
-  // IMPORTANT: Capital C to match your file
   spriteSheet = loadImage("images/player.png");
 }
 
@@ -52,31 +46,32 @@ function draw() {
     moving = true;
   }
 
-  // Animation timing
-  frameCounter++;
-  if (frameCounter >= frameDelay) {
-    frameCounter = 0;
-    currentFrame++;
-
-    let maxFrames = moving ? walkCount : idleCount;
-    if (currentFrame >= maxFrames) {
-      currentFrame = 0;
+  // Animate only if moving
+  if (moving) {
+    frameCounter++;
+    if (frameCounter >= frameDelay) {
+      frameCounter = 0;
+      currentFrame++;
+      if (currentFrame >= totalFrames) {
+        currentFrame = 0;
+      }
     }
   }
 
-  let startFrame = moving ? walkStart : idleStart;
-
+  // Draw frame from vertical sprite sheet
   image(
     spriteSheet,
-    x, y,
-    frameWidth, frameHeight,
+    x,
+    y,
+    frameWidth,
+    frameHeight,
     0,
-    (startFrame + currentFrame) * frameHeight,
+    currentFrame * frameHeight,
     frameWidth,
     frameHeight
   );
 
-  // Food + collision
+  // Food collision
   for (let i = foods.length - 1; i >= 0; i--) {
     foods[i].display();
 
