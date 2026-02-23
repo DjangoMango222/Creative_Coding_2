@@ -22,7 +22,7 @@ let score = 0;
 
 function preload() {
   // IMPORTANT: Capital C to match your file
-  spriteSheet = loadImage("images/character.png");
+  spriteSheet = loadImage("images/player.png");
 }
 
 function setup() {
