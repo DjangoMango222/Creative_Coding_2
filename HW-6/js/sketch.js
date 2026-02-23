@@ -1,15 +1,12 @@
-// sketch.js
-
 let spriteSheet;
 
 // Sprite frame size
 let frameWidth = 32;
-let frameHeight = 32;
+let frameHeight = 50; // Corrected to match 400px height / 8 frames
 
 // Animation frames
 let idleStart = 0;
 let idleCount = 4;
-
 let walkStart = 4;
 let walkCount = 4;
 
@@ -28,7 +25,7 @@ let foods = [];
 let score = 0;
 
 function preload() {
-  spriteSheet = loadImage("images/character.png"); // Make sure this exists!
+  spriteSheet = loadImage("images/character.png"); 
 }
 
 function setup() {
@@ -52,7 +49,6 @@ function draw() {
     x -= speed;
     moving = true;
   }
-
   if (keyIsDown(RIGHT_ARROW)) {
     x += speed;
     moving = true;
@@ -63,18 +59,14 @@ function draw() {
   if (frameCounter > frameDelay) {
     frameCounter = 0;
     currentFrame++;
-
     let maxFrames = moving ? walkCount : idleCount;
-
-    if (currentFrame >= maxFrames) {
-      currentFrame = 0;
-    }
+    if (currentFrame >= maxFrames) currentFrame = 0;
   }
 
   // Choose animation
   let startFrame = moving ? walkStart : idleStart;
 
-  // Draw character (vertical sprite sheet)
+  // Draw character from vertical sprite sheet
   image(
     spriteSheet,
     x, y,
@@ -88,10 +80,7 @@ function draw() {
   // Display food and check for collection
   for (let i = foods.length - 1; i >= 0; i--) {
     foods[i].display();
-
-    // Simple collision
     let d = dist(x + frameWidth / 2, y + frameHeight / 2, foods[i].x, foods[i].y);
-
     if (d < foods[i].size / 2 + frameWidth / 2) {
       foods.splice(i, 1);
       score++;
