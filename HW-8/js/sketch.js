@@ -21,7 +21,7 @@ function preload() {
   badFoodImg = loadImage("images/badfood.png");
 
   // Load sounds
-  bgMusic = loadSound("sounds/music.mp3");  // or .wav
+  bgMusic = loadSound("sounds/music.mp3");
   goodSound = loadSound("sounds/good.wav");
   badSound = loadSound("sounds/bad.wav");
 }
@@ -30,7 +30,7 @@ function setup() {
   createCanvas(600, 400);
   imageMode(CENTER);
 
-  // Initialize positions
+  // Initialize player and food positions
   player = createVector(width / 2, height / 2);
   goodFood = createVector(random(50, width - 50), random(50, height - 50));
   badFood = createVector(random(50, width - 50), random(50, height - 50));
@@ -39,7 +39,7 @@ function setup() {
 function draw() {
   background(100, 150, 200);  // simple backdrop
 
-  movePlayer();
+  movePlayer();  // keyboard movement
 
   // Draw sprites
   image(playerImg, player.x, player.y, 50, 50);
@@ -52,11 +52,19 @@ function draw() {
 }
 
 function movePlayer() {
+  // Arrow keys
   if (keyIsDown(LEFT_ARROW)) player.x -= 5;
   if (keyIsDown(RIGHT_ARROW)) player.x += 5;
   if (keyIsDown(UP_ARROW)) player.y -= 5;
   if (keyIsDown(DOWN_ARROW)) player.y += 5;
 
+  // WASD keys
+  if (keyIsDown(65)) player.x -= 5; // A
+  if (keyIsDown(68)) player.x += 5; // D
+  if (keyIsDown(87)) player.y -= 5; // W
+  if (keyIsDown(83)) player.y += 5; // S
+
+  // Keep player inside canvas
   player.x = constrain(player.x, 25, width - 25);
   player.y = constrain(player.y, 25, height - 25);
 }
@@ -85,6 +93,7 @@ function drawUI() {
 }
 
 function mousePressed() {
+  // Start background music on first click
   if (!musicStarted) {
     bgMusic.loop();
     musicStarted = true;
