@@ -319,19 +319,19 @@ function drawHUD() {
 }
 
 function leftPressed() {
-  return keyIsDown(LEFT_ARROW) || keyIsDown(65) || (typeof kb !== "undefined" && (kb.pressing("left") || kb.pressing("a")));
+  return kb.pressing("left") || kb.pressing("a");
 }
 
 function rightPressed() {
-  return keyIsDown(RIGHT_ARROW) || keyIsDown(68) || (typeof kb !== "undefined" && (kb.pressing("right") || kb.pressing("d")));
+  return kb.pressing("right") || kb.pressing("d");
 }
 
 function upPressed() {
-  return keyIsDown(UP_ARROW) || keyIsDown(87) || (typeof kb !== "undefined" && (kb.pressing("up") || kb.pressing("w")));
+  return kb.pressing("up") || kb.pressing("w");
 }
 
 function downPressed() {
-  return keyIsDown(DOWN_ARROW) || keyIsDown(83) || (typeof kb !== "undefined" && (kb.pressing("down") || kb.pressing("s")));
+  return kb.pressing("down") || kb.pressing("s");
 }
 
 function windowResized() {
