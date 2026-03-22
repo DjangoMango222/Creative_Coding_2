@@ -1,6 +1,5 @@
 let canvas;
 
-let playerSprite;
 let appleSprite;
 let burgerSprite;
 let obstacles;
@@ -175,11 +174,6 @@ function resetSnake(segmentCount) {
   for (let i = 0; i < 500; i++) {
     trail.push({ x: snake.x, y: snake.y });
   }
-
-  if (playerSprite) playerSprite.remove();
-  playerSprite = new Sprite(snake.x, snake.y, 28, 28);
-  playerSprite.visible = false;
-  playerSprite.collider = "kinematic";
 }
 
 function buildLevel() {
@@ -195,7 +189,6 @@ function buildLevel() {
   obstacles = new Group();
 
   let obstacleCount = level === 1 ? 3 : 4;
-
   for (let i = 0; i < obstacleCount; i++) {
     createObstacle();
   }
@@ -258,8 +251,6 @@ function runGame() {
   moveSnake();
   updateTrail();
   updateBody();
-  syncPlayerSprite();
-
   moveBurger();
   checkApple();
   checkBurger();
@@ -324,11 +315,6 @@ function moveSnake() {
 
   snake.x = constrain(snake.x, snake.size / 2, width - snake.size / 2);
   snake.y = constrain(snake.y, snake.size / 2, height - snake.size / 2);
-}
-
-function syncPlayerSprite() {
-  playerSprite.x = snake.x;
-  playerSprite.y = snake.y;
 }
 
 function updateTrail() {
@@ -397,10 +383,15 @@ function drawSnake() {
 }
 
 function checkApple() {
-  if (playerSprite.overlaps(appleSprite)) {
+  let d = dist(snake.x, snake.y, appleSprite.x, appleSprite.y);
+
+  if (d < 32) {
     score++;
 
-    let last = body.length > 0 ? body[body.length - 1] : { x: snake.x, y: snake.y };
+    let last = body.length > 0
+      ? body[body.length - 1]
+      : { x: snake.x, y: snake.y };
+
     body.push({
       x: last.x,
       y: last.y,
@@ -412,9 +403,13 @@ function checkApple() {
 }
 
 function checkBurger() {
-  if (hitCooldown > 0) hitCooldown--;
+  if (hitCooldown > 0) {
+    hitCooldown--;
+  }
 
-  if (playerSprite.overlaps(burgerSprite) && hitCooldown === 0) {
+  let d = dist(snake.x, snake.y, burgerSprite.x, burgerSprite.y);
+
+  if (d < 40 && hitCooldown === 0) {
     health -= level === 1 ? 5 : 8;
     hitCooldown = 16;
   }
@@ -454,12 +449,26 @@ function placeApple() {
     let y = random(80, height - 80);
 
     if (dist(x, y, snake.x, snake.y) < 140) continue;
-    if (burgerSprite && dist(x, y, burgerSprite.x, burgerSprite.y) < 100) continue;
+    if (burgerSprite && dist(x, y, burgerSprite.x, burgerSprite.y) < 120) continue;
     if (hitsObstacle(x, y, 20, 20)) continue;
+
+    let onBody = false;
+    for (let i = 0; i < body.length; i++) {
+      if (dist(x, y, body[i].x, body[i].y) < 40) {
+        onBody = true;
+        break;
+      }
+    }
+    if (onBody) continue;
 
     placed = true;
     appleSprite.x = x;
     appleSprite.y = y;
+  }
+
+  if (!placed) {
+    appleSprite.x = width * 0.7;
+    appleSprite.y = height * 0.3;
   }
 }
 
@@ -474,16 +483,23 @@ function placeBurger() {
     let y = random(120, height - 120);
 
     if (dist(x, y, snake.x, snake.y) < 220) continue;
-    if (dist(x, y, appleSprite.x, appleSprite.y) < 120) continue;
+    if (appleSprite && dist(x, y, appleSprite.x, appleSprite.y) < 120) continue;
     if (hitsObstacle(x, y, 26, 26)) continue;
 
     placed = true;
     burgerSprite.x = x;
     burgerSprite.y = y;
   }
+
+  if (!placed) {
+    burgerSprite.x = width * 0.75;
+    burgerSprite.y = height * 0.7;
+  }
 }
 
 function hitsObstacle(testX, testY, halfW, halfH) {
+  if (!obstacles) return false;
+
   for (let i = 0; i < obstacles.length; i++) {
     let o = obstacles[i];
 
@@ -523,10 +539,5 @@ function windowResized() {
   if (burgerSprite) {
     burgerSprite.x = constrain(burgerSprite.x, 30, width - 30);
     burgerSprite.y = constrain(burgerSprite.y, 30, height - 30);
-  }
-
-  if (playerSprite && snake) {
-    playerSprite.x = snake.x;
-    playerSprite.y = snake.y;
   }
 }
