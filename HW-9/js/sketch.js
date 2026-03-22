@@ -27,7 +27,6 @@ function setup() {
   imageMode(CENTER);
   textFont("Arial");
 
-  // important for p5.play v3 so sprites don't behave weirdly
   if (typeof world !== "undefined") {
     world.gravity.y = 0;
   }
