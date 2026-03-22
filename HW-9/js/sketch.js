@@ -635,4 +635,4 @@ function windowResized() {
     burgerSprite.x = constrain(burgerSprite.x, 30, width - 30);
     burgerSprite.y = constrain(burgerSprite.y, 30, height - 30);
   }
-}
+}  
