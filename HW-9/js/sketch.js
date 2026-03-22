@@ -18,6 +18,8 @@ let hitCooldown = 0;
 let burgerDX = 3;
 let burgerDY = 3;
 
+let keys = {};
+
 function preload() {
   snakeImg = loadImage("images/snake-head-right.png");
   appleImg = loadImage("images/apple.png");
@@ -32,6 +34,21 @@ function setup() {
   if (typeof world !== "undefined") {
     world.gravity.y = 0;
   }
+
+  window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keyup", handleKeyUp);
+}
+
+function handleKeyDown(e) {
+  keys[e.key.toLowerCase()] = true;
+
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) {
+    e.preventDefault();
+  }
+}
+
+function handleKeyUp(e) {
+  keys[e.key.toLowerCase()] = false;
 }
 
 function draw() {
@@ -84,7 +101,7 @@ function drawEndScreen(message) {
 }
 
 function keyPressed() {
-  if (gameState === "menu" && (key === " " || keyCode === 32)) {
+  if (gameState === "menu" && key === " ") {
     startGame();
   }
 
@@ -195,6 +212,8 @@ function runGame() {
 }
 
 function movePlayer() {
+  if (!player) return;
+
   let speed = 6;
   let dx = 0;
   let dy = 0;
@@ -230,6 +249,8 @@ function movePlayer() {
 }
 
 function moveBurger() {
+  if (!burger) return;
+
   burger.x += burgerDX;
   burger.y += burgerDY;
 
@@ -292,7 +313,7 @@ function placeSpriteSafely(sprite, margin) {
     let testX = random(margin, width - margin);
     let testY = random(margin, height - margin);
 
-    let tooCloseToPlayer = dist(testX, testY, player.x, player.y) < 160;
+    let tooCloseToPlayer = player && dist(testX, testY, player.x, player.y) < 160;
     let insideObstacle = hitsObstacle(testX, testY, 35, 35);
 
     if (!tooCloseToPlayer && !insideObstacle) {
@@ -319,19 +340,19 @@ function drawHUD() {
 }
 
 function leftPressed() {
-  return kb.pressing("left") || kb.pressing("a");
+  return keys["arrowleft"] || keys["a"];
 }
 
 function rightPressed() {
-  return kb.pressing("right") || kb.pressing("d");
+  return keys["arrowright"] || keys["d"];
 }
 
 function upPressed() {
-  return kb.pressing("up") || kb.pressing("w");
+  return keys["arrowup"] || keys["w"];
 }
 
 function downPressed() {
-  return kb.pressing("down") || kb.pressing("s");
+  return keys["arrowdown"] || keys["s"];
 }
 
 function windowResized() {
