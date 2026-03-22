@@ -17,6 +17,13 @@ let level = 1;
 let playerSpeed = 3;
 let damageCooldown = 0;
 
+let startBtn = {
+  x: 400,
+  y: 330,
+  w: 200,
+  h: 60
+};
+
 function preload() {
   snakeUp = loadImage("images/snake-head-up.png");
   snakeDown = loadImage("images/snake-head-down.png");
@@ -29,8 +36,8 @@ function preload() {
 
 function setup() {
   createCanvas(800, 600);
-  textAlign(CENTER, CENTER);
   imageMode(CENTER);
+  textAlign(CENTER, CENTER);
 }
 
 function draw() {
@@ -48,35 +55,57 @@ function draw() {
 function drawMenu() {
   background(18, 24, 20);
 
+  let hovering =
+    mouseX > startBtn.x - startBtn.w / 2 &&
+    mouseX < startBtn.x + startBtn.w / 2 &&
+    mouseY > startBtn.y - startBtn.h / 2 &&
+    mouseY < startBtn.y + startBtn.h / 2;
+
+  push();
+  rectMode(CENTER);
+  textAlign(CENTER, CENTER);
+
   fill(255);
-  textSize(44);
-  text("VentureSnake", width / 2, height / 2 - 95);
+  textSize(46);
+  text("VentureSnake", width / 2, 180);
 
   textSize(22);
-  text("Made by Django Behunin", width / 2, height / 2 - 45);
+  text("Made by Django Behunin", width / 2, 225);
 
-  fill(170, 245, 180);
-  rectMode(CENTER);
-  rect(width / 2, height / 2 + 30, 190, 58, 12);
+  stroke(255);
+  strokeWeight(2);
+  fill(hovering ? color(210, 255, 210) : color(170, 245, 180));
+  rect(startBtn.x, startBtn.y, startBtn.w, startBtn.h, 12);
 
+  noStroke();
   fill(20);
-  textSize(26);
-  text("= START =", width / 2, height / 2 + 30);
+  textSize(28);
+  text("= START =", startBtn.x, startBtn.y);
 
   fill(230);
   textSize(16);
-  text("Use WASD or Arrow Keys", width / 2, height / 2 + 95);
-  text("Collect apples, avoid burgers, reach 10 score to win", width / 2, height / 2 + 123);
+  text("Use WASD or Arrow Keys", width / 2, 410);
+  text("Collect apples, avoid burgers, hit 10 score to win", width / 2, 440);
+
+  pop();
 }
 
 function mousePressed() {
   if (gameState === "menu") {
-    startGame();
+    let insideButton =
+      mouseX > startBtn.x - startBtn.w / 2 &&
+      mouseX < startBtn.x + startBtn.w / 2 &&
+      mouseY > startBtn.y - startBtn.h / 2 &&
+      mouseY < startBtn.y + startBtn.h / 2;
+
+    if (insideButton) {
+      startGame();
+    }
   }
 }
 
 function keyPressed() {
-  if (gameState === "menu" && key === " ") {
+  if (gameState === "menu" && (key === " " || keyCode === ENTER)) {
     startGame();
   }
 
@@ -89,6 +118,7 @@ function startGame() {
   score = 0;
   health = 100;
   level = 1;
+  damageCooldown = 0;
   setupLevel1();
 }
 
@@ -97,7 +127,6 @@ function setupLevel1() {
 
   playerSpeed = 3;
   direction = "right";
-  damageCooldown = 0;
 
   createPlayer(120, 120);
   createWalls();
@@ -114,7 +143,6 @@ function setupLevel2() {
 
   playerSpeed = 4;
   direction = "right";
-  damageCooldown = 0;
 
   createPlayer(120, 120);
   createWalls();
@@ -160,7 +188,7 @@ function createPlayer(x, y) {
 }
 
 function createApple() {
-  apple = createSprite(random(100, 700), random(120, 530), 24, 24);
+  apple = createSprite(random(100, 700), random(100, 520), 24, 24);
   apple.addImage(appleImg);
   apple.scale = 0.6;
 }
@@ -169,7 +197,7 @@ function createBadItems(amount) {
   badItems = new Group();
 
   for (let i = 0; i < amount; i++) {
-    let bad = createSprite(random(120, 680), random(130, 500), 40, 40);
+    let bad = createSprite(random(120, 680), random(120, 500), 40, 40);
     bad.addImage(burgerImg);
     bad.scale = 0.2;
     bad.velocity.x = random([-2, 2]);
@@ -360,7 +388,6 @@ function drawUI() {
   text("Score: " + score + " / 10", 270, 31);
 
   drawSnakeIcon(38, 31, 24);
-
   drawHealthBar(540, 20, 200, 20);
 
   fill(230);
@@ -375,7 +402,6 @@ function drawSnakeIcon(x, y, size) {
   noStroke();
   fill(34, 46, 40);
   circle(x, y, size + 16);
-
   image(getSnakeIconImage(), x, y, size, size);
   pop();
 }
