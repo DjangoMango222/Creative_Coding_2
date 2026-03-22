@@ -2,37 +2,43 @@ let canvas;
 
 let player;
 let apple;
-let badItems;
+let burger;
 let obstacles;
-let walls;
 
-let playerImg, appleImg, badImg;
+let snakeImg;
+let appleImg;
+let burgerImg;
 
 let score = 0;
 let health = 100;
-let gameState = "play";
+let level = 1;
+let gameState = "menu";
 
 function preload() {
-  playerImg = loadImage("images/snake-head-right.png");
+  snakeImg = loadImage("images/snake-head-right.png");
   appleImg = loadImage("images/apple.png");
-  badImg = loadImage("images/fast-food-png-41613.png");
+  burgerImg = loadImage("images/fast-food-png-41613.png");
 }
 
 function setup() {
-  let gameWidth = 1200;
-  let gameHeight = 800;
-
-  canvas = createCanvas(gameWidth, gameHeight);
+  canvas = createCanvas(1200, 800);
 
   let x = (windowWidth - width) / 2;
   let y = (windowHeight - height) / 2;
   canvas.position(x, y);
-
-  startGame();
 }
 
 function draw() {
   background(30);
+
+  if (gameState === "menu") {
+    fill(255);
+    textSize(40);
+    text("VentureSnake", width / 2 - 120, height / 2 - 40);
+
+    textSize(20);
+    text("Press SPACE to start", width / 2 - 110, height / 2 + 10);
+  }
 
   if (gameState === "play") {
     runGame();
@@ -41,97 +47,94 @@ function draw() {
   if (gameState === "win") {
     fill(255);
     textSize(40);
-    text("YOU WIN", width / 2 - 100, height / 2);
+    text("YOU WIN", width / 2 - 90, height / 2);
   }
 
   if (gameState === "lose") {
     fill(255);
     textSize(40);
-    text("GAME OVER", width / 2 - 120, height / 2);
+    text("GAME OVER", width / 2 - 110, height / 2);
+  }
+}
+
+function keyPressed() {
+  if (gameState === "menu" && key === " ") {
+    startGame();
+  }
+
+  if ((gameState === "win" || gameState === "lose") && (key === "r" || key === "R")) {
+    startGame();
   }
 }
 
 function startGame() {
   score = 0;
   health = 100;
+  level = 1;
+  setupLevel();
+  gameState = "play";
+}
 
+function clearSprites() {
   if (player) player.remove();
   if (apple) apple.remove();
-  if (badItems) badItems.remove();
+  if (burger) burger.remove();
   if (obstacles) obstacles.remove();
-  if (walls) walls.remove();
+}
+
+function setupLevel() {
+  clearSprites();
+
+  obstacles = new Group();
 
   player = new Sprite(120, 120, 60, 60);
-  player.img = playerImg;
+  player.img = snakeImg;
   player.scale = 0.5;
+  player.collider = "dynamic";
+  player.rotationLock = true;
 
   apple = new Sprite(random(120, width - 120), random(120, height - 120), 30, 30);
   apple.img = appleImg;
   apple.scale = 0.4;
+  apple.collider = "static";
 
-  badItems = new Group();
-  obstacles = new Group();
-  walls = new Group();
+  burger = new Sprite(random(200, width - 200), random(200, height - 200), 60, 60);
+  burger.img = burgerImg;
+  burger.scale = 0.18;
+  burger.collider = "dynamic";
+  burger.vel.x = random([-3, 3]);
+  burger.vel.y = random([-3, 3]);
+  burger.rotationLock = true;
 
-  createWalls();
-
-  // bad items
   for (let i = 0; i < 3; i++) {
-    let b = new Sprite(random(150, width - 150), random(150, height - 150), 60, 60);
-    b.img = badImg;
-    b.scale = 0.18;
-    b.vel.x = random([-3, 3]);
-    b.vel.y = random([-3, 3]);
-    badItems.add(b);
-  }
-
-  // obstacles
-  for (let i = 0; i < 3; i++) {
-    let o = new Sprite(random(200, width - 200), random(150, height - 150), 160, 40);
+    let o = new Sprite(
+      random(200, width - 200),
+      random(150, height - 150),
+      random(120, 180),
+      40
+    );
     o.color = "gray";
     o.collider = "static";
     obstacles.add(o);
   }
 }
 
-function createWalls() {
-  let top = new Sprite(width / 2, 5, width, 10, "static");
-  let bottom = new Sprite(width / 2, height - 5, width, 10, "static");
-  let left = new Sprite(5, height / 2, 10, height, "static");
-  let right = new Sprite(width - 5, height / 2, 10, height, "static");
-
-  top.visible = false;
-  bottom.visible = false;
-  left.visible = false;
-  right.visible = false;
-
-  walls.add(top);
-  walls.add(bottom);
-  walls.add(left);
-  walls.add(right);
-}
-
 function runGame() {
   movePlayer();
+  keepPlayerInScreen();
+  moveBurger();
 
   player.collides(obstacles);
-  player.collides(walls);
-
-  for (let b of badItems) {
-    b.collides(obstacles);
-    b.collides(walls);
-  }
+  burger.collides(obstacles);
 
   if (player.overlaps(apple)) {
     score++;
-    apple.pos.x = random(120, width - 120);
-    apple.pos.y = random(120, height - 120);
+    apple.x = random(120, width - 120);
+    apple.y = random(120, height - 120);
   }
 
-  for (let b of badItems) {
-    if (player.overlaps(b)) {
-      health -= 1;
-    }
+  if (player.overlaps(burger)) {
+    health -= 1;
   }
 
   drawSprites();
@@ -140,21 +143,57 @@ function runGame() {
   textSize(24);
   text("Score: " + score, 20, 35);
   text("Health: " + health, 20, 70);
+  text("Level: " + level, 20, 105);
 
-  if (score >= 10) gameState = "win";
-  if (health <= 0) gameState = "lose";
+  if (level === 1 && score >= 5) {
+    level = 2;
+    setupLevel();
+  }
+
+  if (score >= 10) {
+    gameState = "win";
+  }
+
+  if (health <= 0) {
+    gameState = "lose";
+  }
 }
 
 function movePlayer() {
   let speed = 5;
 
-  player.vel.x = 0;
-  player.vel.y = 0;
+  if (kb.pressing("left") || kb.pressing("a")) {
+    player.x -= speed;
+  }
 
-  if (kb.pressing("left") || kb.pressing("a")) player.vel.x = -speed;
-  if (kb.pressing("right") || kb.pressing("d")) player.vel.x = speed;
-  if (kb.pressing("up") || kb.pressing("w")) player.vel.y = -speed;
-  if (kb.pressing("down") || kb.pressing("s")) player.vel.y = speed;
+  if (kb.pressing("right") || kb.pressing("d")) {
+    player.x += speed;
+  }
+
+  if (kb.pressing("up") || kb.pressing("w")) {
+    player.y -= speed;
+  }
+
+  if (kb.pressing("down") || kb.pressing("s")) {
+    player.y += speed;
+  }
+}
+
+function keepPlayerInScreen() {
+  if (player.x < 20) player.x = 20;
+  if (player.x > width - 20) player.x = width - 20;
+  if (player.y < 20) player.y = 20;
+  if (player.y > height - 20) player.y = height - 20;
+}
+
+function moveBurger() {
+  if (burger.x < 20 || burger.x > width - 20) {
+    burger.vel.x *= -1;
+  }
+
+  if (burger.y < 20 || burger.y > height - 20) {
+    burger.vel.y *= -1;
+  }
 }
 
 function windowResized() {
