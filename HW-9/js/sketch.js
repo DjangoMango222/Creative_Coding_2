@@ -88,10 +88,7 @@ function keyPressed() {
     startGame();
   }
 
-  if (
-    (gameState === "win" || gameState === "lose") &&
-    (key === "r" || key === "R")
-  ) {
+  if ((gameState === "win" || gameState === "lose") && (key === "r" || key === "R")) {
     startGame();
   }
 }
