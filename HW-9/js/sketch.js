@@ -1,13 +1,16 @@
+let canvas;
+
 let player;
 let apple;
 let badItems;
 let obstacles;
+let walls;
 
 let playerImg, appleImg, badImg;
 
 let score = 0;
 let health = 100;
-let gameState = "menu";
+let gameState = "play";
 
 function preload() {
   playerImg = loadImage("images/snake-head-right.png");
@@ -16,20 +19,20 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  let gameWidth = 1200;
+  let gameHeight = 800;
+
+  canvas = createCanvas(gameWidth, gameHeight);
+
+  let x = (windowWidth - width) / 2;
+  let y = (windowHeight - height) / 2;
+  canvas.position(x, y);
+
+  startGame();
 }
 
 function draw() {
   background(30);
-
-  if (gameState === "menu") {
-    fill(255);
-    textSize(40);
-    text("VentureSnake", width / 2 - 120, height / 2 - 40);
-
-    textSize(20);
-    text("Press SPACE to start", width / 2 - 110, height / 2 + 10);
-  }
 
   if (gameState === "play") {
     runGame();
@@ -48,14 +51,7 @@ function draw() {
   }
 }
 
-function keyPressed() {
-  if (gameState === "menu" && key === " ") {
-    startGame();
-  }
-}
-
 function startGame() {
-
   score = 0;
   health = 100;
 
@@ -63,59 +59,75 @@ function startGame() {
   if (apple) apple.remove();
   if (badItems) badItems.remove();
   if (obstacles) obstacles.remove();
+  if (walls) walls.remove();
 
-  // player
-  player = new Sprite(width / 2, height / 2, 40, 40);
+  player = new Sprite(120, 120, 60, 60);
   player.img = playerImg;
-  player.scale = 0.3;
+  player.scale = 0.5;
 
-  // apple
-  apple = new Sprite(random(100, width - 100), random(100, height - 100), 20, 20);
+  apple = new Sprite(random(120, width - 120), random(120, height - 120), 30, 30);
   apple.img = appleImg;
-  apple.scale = 0.3;
+  apple.scale = 0.4;
 
   badItems = new Group();
   obstacles = new Group();
+  walls = new Group();
+
+  createWalls();
 
   // bad items
   for (let i = 0; i < 3; i++) {
-    let b = new Sprite(random(100, width - 100), random(100, height - 100), 30, 30);
+    let b = new Sprite(random(150, width - 150), random(150, height - 150), 60, 60);
     b.img = badImg;
-    b.scale = 0.2;
-    b.vel.x = random([-2, 2]);
-    b.vel.y = random([-2, 2]);
+    b.scale = 0.18;
+    b.vel.x = random([-3, 3]);
+    b.vel.y = random([-3, 3]);
     badItems.add(b);
   }
 
   // obstacles
   for (let i = 0; i < 3; i++) {
-    let o = new Sprite(random(150, width - 150), random(150, height - 150), 100, 30);
+    let o = new Sprite(random(200, width - 200), random(150, height - 150), 160, 40);
     o.color = "gray";
     o.collider = "static";
     obstacles.add(o);
   }
+}
 
-  gameState = "play";
+function createWalls() {
+  let top = new Sprite(width / 2, 5, width, 10, "static");
+  let bottom = new Sprite(width / 2, height - 5, width, 10, "static");
+  let left = new Sprite(5, height / 2, 10, height, "static");
+  let right = new Sprite(width - 5, height / 2, 10, height, "static");
+
+  top.visible = false;
+  bottom.visible = false;
+  left.visible = false;
+  right.visible = false;
+
+  walls.add(top);
+  walls.add(bottom);
+  walls.add(left);
+  walls.add(right);
 }
 
 function runGame() {
-
   movePlayer();
 
   player.collides(obstacles);
+  player.collides(walls);
 
   for (let b of badItems) {
     b.collides(obstacles);
+    b.collides(walls);
   }
 
-  // collect apple
   if (player.overlaps(apple)) {
     score++;
-    apple.pos.x = random(100, width - 100);
-    apple.pos.y = random(100, height - 100);
+    apple.pos.x = random(120, width - 120);
+    apple.pos.y = random(120, height - 120);
   }
 
-  // hit bad items
   for (let b of badItems) {
     if (player.overlaps(b)) {
       health -= 1;
@@ -125,31 +137,28 @@ function runGame() {
   drawSprites();
 
   fill(255);
-  textSize(18);
-  text("Score: " + score, 20, 30);
-  text("Health: " + health, 20, 60);
+  textSize(24);
+  text("Score: " + score, 20, 35);
+  text("Health: " + health, 20, 70);
 
-  if (score >= 10) {
-    gameState = "win";
-  }
-
-  if (health <= 0) {
-    gameState = "lose";
-  }
+  if (score >= 10) gameState = "win";
+  if (health <= 0) gameState = "lose";
 }
 
 function movePlayer() {
-  let speed = 4;
+  let speed = 5;
 
   player.vel.x = 0;
   player.vel.y = 0;
 
-  if (kb.pressing("up")) player.vel.y = -speed;
-  if (kb.pressing("down")) player.vel.y = speed;
-  if (kb.pressing("left")) player.vel.x = -speed;
-  if (kb.pressing("right")) player.vel.x = speed;
+  if (kb.pressing("left") || kb.pressing("a")) player.vel.x = -speed;
+  if (kb.pressing("right") || kb.pressing("d")) player.vel.x = speed;
+  if (kb.pressing("up") || kb.pressing("w")) player.vel.y = -speed;
+  if (kb.pressing("down") || kb.pressing("s")) player.vel.y = speed;
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  let x = (windowWidth - width) / 2;
+  let y = (windowHeight - height) / 2;
+  canvas.position(x, y);
 }
