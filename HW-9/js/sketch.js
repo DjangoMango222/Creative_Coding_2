@@ -1,30 +1,44 @@
 let canvas;
 
-let player;
-let apple;
-let burger;
-let obstacles;
-
-let snakeImg;
+let headImgs = {};
+let bodyImgs = {};
 let appleImg;
-let burgerImg;
+
+let snake = {
+  x: 0,
+  y: 0,
+  size: 42,
+  speed: 4.5,
+  dir: "right"
+};
+
+let body = [];
+let trail = [];
+let trailSpacing = 14;
+
+let apple = {
+  x: 0,
+  y: 0,
+  size: 30
+};
 
 let score = 0;
-let health = 100;
-let level = 1;
-let gameState = "menu";
-let hitCooldown = 0;
-
-let burgerDX = 3;
-let burgerDY = 3;
-
-// robust keyboard tracking
 const keys = Object.create(null);
 
 function preload() {
-  snakeImg = loadImage("images/snake-head-right.png");
+  headImgs.up = loadImage("images/snake-head-up.png");
+  headImgs.down = loadImage("images/snake-head-down.png");
+  headImgs.left = loadImage("images/snake-head-left.png");
+  headImgs.right = loadImage("images/snake-head-right.png");
+
+  bodyImgs.horizontal = loadImage("images/snake-body-left-to-right.png");
+  bodyImgs.vertical = loadImage("images/snake-body-up-to-down.png");
+  bodyImgs.upRight = loadImage("images/snake-body-up-to-right-curve.png");
+  bodyImgs.upLeft = loadImage("images/snake-body-up-to-left-curve.png");
+  bodyImgs.downRight = loadImage("images/snake-body-down-to-right-curve.png");
+  bodyImgs.downLeft = loadImage("images/snake-body-down-to-left-curve.png");
+
   appleImg = loadImage("images/apple.png");
-  burgerImg = loadImage("images/fast-food-png-41613.png");
 }
 
 function setup() {
@@ -32,11 +46,31 @@ function setup() {
   imageMode(CENTER);
   textFont("Arial");
 
-  if (typeof world !== "undefined") {
-    world.gravity.y = 0;
+  setupKeyboard();
+  resetTest();
+}
+
+function resetTest() {
+  snake.x = width * 0.35;
+  snake.y = height * 0.5;
+  snake.dir = "right";
+
+  body = [];
+  for (let i = 0; i < 3; i++) {
+    body.push({
+      x: snake.x - (i + 1) * trailSpacing * 2,
+      y: snake.y,
+      img: bodyImgs.horizontal
+    });
   }
 
-  setupKeyboard();
+  trail = [];
+  for (let i = 0; i < 400; i++) {
+    trail.push({ x: snake.x, y: snake.y });
+  }
+
+  score = 0;
+  placeApple();
 }
 
 function setupKeyboard() {
@@ -45,28 +79,22 @@ function setupKeyboard() {
     (e) => {
       keys[e.code] = true;
 
-      // menu / restart controls
-      if (e.code === "Space" && gameState === "menu") {
-        startGame();
-      }
-
-      if ((gameState === "win" || gameState === "lose") && e.code === "KeyR") {
-        startGame();
-      }
-
-      // stop browser from messing with arrows/space
       if (
         e.code === "ArrowLeft" ||
         e.code === "ArrowRight" ||
         e.code === "ArrowUp" ||
         e.code === "ArrowDown" ||
-        e.code === "Space" ||
         e.code === "KeyW" ||
         e.code === "KeyA" ||
         e.code === "KeyS" ||
-        e.code === "KeyD"
+        e.code === "KeyD" ||
+        e.code === "Space"
       ) {
         e.preventDefault();
+      }
+
+      if (e.code === "KeyR") {
+        resetTest();
       }
     },
     { passive: false }
@@ -76,7 +104,6 @@ function setupKeyboard() {
     keys[e.code] = false;
   });
 
-  // clear stuck keys if browser focus changes
   window.addEventListener("blur", clearKeys);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) clearKeys();
@@ -90,284 +117,182 @@ function clearKeys() {
 }
 
 function draw() {
-  background(30);
+  background(25);
 
-  if (gameState === "menu") {
-    drawMenu();
-    return;
-  }
+  moveSnake();
+  updateTrail();
+  updateBody();
+  checkApple();
 
-  if (gameState === "play") {
-    runGame();
-    return;
-  }
-
-  if (gameState === "win") {
-    drawEndScreen("YOU WIN");
-    return;
-  }
-
-  if (gameState === "lose") {
-    drawEndScreen("GAME OVER");
-    return;
-  }
-}
-
-function drawMenu() {
-  fill(255);
-  textAlign(CENTER, CENTER);
-
-  textSize(56);
-  text("VentureSnake", width / 2, height / 2 - 50);
-
-  textSize(24);
-  text("Press SPACE to start", width / 2, height / 2 + 10);
-  text("Use WASD or Arrow Keys to move", width / 2, height / 2 + 45);
-}
-
-function drawEndScreen(message) {
-  drawSprites();
-
-  fill(255);
-  textAlign(CENTER, CENTER);
-
-  textSize(56);
-  text(message, width / 2, height / 2 - 20);
-
-  textSize(24);
-  text("Press R to restart", width / 2, height / 2 + 35);
-}
-
-function startGame() {
-  score = 0;
-  health = 100;
-  level = 1;
-  hitCooldown = 0;
-  clearKeys();
-  setupLevel();
-  gameState = "play";
-}
-
-function clearSprites() {
-  if (player) player.remove();
-  if (apple) apple.remove();
-  if (burger) burger.remove();
-
-  if (obstacles) {
-    while (obstacles.length > 0) {
-      obstacles[0].remove();
-    }
-  }
-}
-
-function setupLevel() {
-  clearSprites();
-
-  obstacles = new Group();
-
-  player = new Sprite(120, 120, 60, 60);
-  player.img = snakeImg;
-  player.scale = 0.55;
-  player.collider = "kinematic";
-  player.rotationLock = true;
-
-  apple = new Sprite(0, 0, 30, 30);
-  apple.img = appleImg;
-  apple.scale = 0.4;
-  apple.collider = "static";
-
-  burger = new Sprite(0, 0, 60, 60);
-  burger.img = burgerImg;
-  burger.scale = 0.18;
-  burger.collider = "kinematic";
-  burger.rotationLock = true;
-
-  let obstacleCount = level === 1 ? 3 : 4;
-
-  for (let i = 0; i < obstacleCount; i++) {
-    let o = new Sprite(
-      random(220, width - 220),
-      random(160, height - 160),
-      random(120, 200),
-      40
-    );
-    o.color = "gray";
-    o.collider = "static";
-    obstacles.add(o);
-  }
-
-  placeSpriteSafely(apple, 120);
-  placeSpriteSafely(burger, 200);
-
-  let speed = level === 1 ? 3 : 5;
-  burgerDX = random([-speed, speed]);
-  burgerDY = random([-speed, speed]);
-}
-
-function runGame() {
-  movePlayer();
-  moveBurger();
-
-  if (player.overlaps(apple)) {
-    score++;
-    placeSpriteSafely(apple, 120);
-  }
-
-  if (hitCooldown > 0) {
-    hitCooldown--;
-  }
-
-  if (player.overlaps(burger) && hitCooldown === 0) {
-    health -= 5;
-    hitCooldown = 12;
-  }
-
-  drawSprites();
+  drawApple();
+  drawBody();
+  drawHead();
   drawHUD();
-
-  if (level === 1 && score >= 5) {
-    level = 2;
-    setupLevel();
-    return;
-  }
-
-  if (score >= 10) {
-    gameState = "win";
-    clearKeys();
-  }
-
-  if (health <= 0) {
-    gameState = "lose";
-    clearKeys();
-  }
 }
 
-function movePlayer() {
-  if (!player) return;
-
-  let speed = 6;
+function moveSnake() {
   let dx = 0;
   let dy = 0;
 
-  if (isLeftDown()) dx -= speed;
-  if (isRightDown()) dx += speed;
-  if (isUpDown()) dy -= speed;
-  if (isDownDown()) dy += speed;
+  if (isLeftDown()) dx -= snake.speed;
+  if (isRightDown()) dx += snake.speed;
+  if (isUpDown()) dy -= snake.speed;
+  if (isDownDown()) dy += snake.speed;
 
   if (dx !== 0 && dy !== 0) {
     dx *= 0.7071;
     dy *= 0.7071;
   }
 
-  if (dx < 0) player.rotation = 180;
-  else if (dx > 0) player.rotation = 0;
-  else if (dy < 0) player.rotation = -90;
-  else if (dy > 0) player.rotation = 90;
+  snake.x += dx;
+  snake.y += dy;
 
-  let newX = player.x + dx;
-  let newY = player.y + dy;
+  snake.x = constrain(snake.x, snake.size / 2, width - snake.size / 2);
+  snake.y = constrain(snake.y, snake.size / 2, height - snake.size / 2);
 
-  if (!hitsObstacle(newX, player.y, 26, 26)) {
-    player.x = newX;
-  }
-
-  if (!hitsObstacle(player.x, newY, 26, 26)) {
-    player.y = newY;
-  }
-
-  player.x = constrain(player.x, 30, width - 30);
-  player.y = constrain(player.y, 30, height - 30);
-}
-
-function moveBurger() {
-  if (!burger) return;
-
-  burger.x += burgerDX;
-  burger.y += burgerDY;
-
-  let pad = 35;
-
-  if (burger.x < pad) {
-    burger.x = pad;
-    burgerDX *= -1;
-  }
-
-  if (burger.x > width - pad) {
-    burger.x = width - pad;
-    burgerDX *= -1;
-  }
-
-  if (burger.y < pad) {
-    burger.y = pad;
-    burgerDY *= -1;
-  }
-
-  if (burger.y > height - pad) {
-    burger.y = height - pad;
-    burgerDY *= -1;
-  }
-
-  if (hitsObstacle(burger.x, burger.y, 25, 25)) {
-    burgerDX *= -1;
-    burgerDY *= -1;
-    burger.x += burgerDX * 2;
-    burger.y += burgerDY * 2;
+  if (abs(dx) > abs(dy) && abs(dx) > 0) {
+    snake.dir = dx > 0 ? "right" : "left";
+  } else if (abs(dy) > 0) {
+    snake.dir = dy > 0 ? "down" : "up";
   }
 }
 
-function hitsObstacle(testX, testY, halfW, halfH) {
-  if (!obstacles) return false;
+function updateTrail() {
+  trail.unshift({ x: snake.x, y: snake.y });
 
-  for (let i = 0; i < obstacles.length; i++) {
-    let o = obstacles[i];
-    let oHalfW = o.w / 2;
-    let oHalfH = o.h / 2;
-
-    if (
-      abs(testX - o.x) < halfW + oHalfW &&
-      abs(testY - o.y) < halfH + oHalfH
-    ) {
-      return true;
-    }
+  let maxTrail = (body.length + 8) * trailSpacing + 40;
+  while (trail.length > maxTrail) {
+    trail.pop();
   }
-
-  return false;
 }
 
-function placeSpriteSafely(sprite, margin) {
-  let placed = false;
+function updateBody() {
+  for (let i = 0; i < body.length; i++) {
+    let idx = (i + 1) * trailSpacing;
+
+    let prev = trail[max(0, idx - trailSpacing)] || trail[0];
+    let curr = trail[idx] || trail[trail.length - 1];
+    let next = trail[min(trail.length - 1, idx + trailSpacing)] || curr;
+
+    body[i].x = curr.x;
+    body[i].y = curr.y;
+    body[i].img = getBodyImage(prev, curr, next);
+  }
+}
+
+function getBodyImage(prev, curr, next) {
+  let d1 = directionBetween(prev, curr, snake.dir);
+  let d2 = directionBetween(curr, next, d1);
+
+  let hasLeft = d1 === "left" || d2 === "left";
+  let hasRight = d1 === "right" || d2 === "right";
+  let hasUp = d1 === "up" || d2 === "up";
+  let hasDown = d1 === "down" || d2 === "down";
+
+  if ((hasLeft || hasRight) && !(hasUp || hasDown)) {
+    return bodyImgs.horizontal;
+  }
+
+  if ((hasUp || hasDown) && !(hasLeft || hasRight)) {
+    return bodyImgs.vertical;
+  }
+
+  if (hasUp && hasRight) return bodyImgs.upRight;
+  if (hasUp && hasLeft) return bodyImgs.upLeft;
+  if (hasDown && hasRight) return bodyImgs.downRight;
+  if (hasDown && hasLeft) return bodyImgs.downLeft;
+
+  return bodyImgs.horizontal;
+}
+
+function directionBetween(a, b, fallback) {
+  let dx = b.x - a.x;
+  let dy = b.y - a.y;
+
+  if (abs(dx) > abs(dy) && abs(dx) > 0.2) {
+    return dx > 0 ? "right" : "left";
+  }
+
+  if (abs(dy) > 0.2) {
+    return dy > 0 ? "down" : "up";
+  }
+
+  return fallback;
+}
+
+function checkApple() {
+  if (dist(snake.x, snake.y, apple.x, apple.y) < 28) {
+    score++;
+    addBodySegment();
+    placeApple();
+  }
+}
+
+function addBodySegment() {
+  let last = body.length > 0 ? body[body.length - 1] : { x: snake.x, y: snake.y };
+
+  body.push({
+    x: last.x,
+    y: last.y,
+    img: bodyImgs.horizontal
+  });
+}
+
+function placeApple() {
+  let ok = false;
   let tries = 0;
 
-  while (!placed && tries < 200) {
+  while (!ok && tries < 200) {
     tries++;
 
-    let testX = random(margin, width - margin);
-    let testY = random(margin, height - margin);
+    let testX = random(80, width - 80);
+    let testY = random(80, height - 80);
 
-    let tooCloseToPlayer = player && dist(testX, testY, player.x, player.y) < 160;
-    let insideObstacle = hitsObstacle(testX, testY, 35, 35);
+    ok = dist(testX, testY, snake.x, snake.y) > 140;
 
-    if (!tooCloseToPlayer && !insideObstacle) {
-      sprite.x = testX;
-      sprite.y = testY;
-      placed = true;
+    for (let i = 0; i < body.length; i++) {
+      if (dist(testX, testY, body[i].x, body[i].y) < 50) {
+        ok = false;
+        break;
+      }
+    }
+
+    if (ok) {
+      apple.x = testX;
+      apple.y = testY;
     }
   }
 
-  if (!placed) {
-    sprite.x = width / 2;
-    sprite.y = height / 2;
+  if (!ok) {
+    apple.x = width * 0.7;
+    apple.y = height * 0.5;
   }
+}
+
+function drawApple() {
+  image(appleImg, apple.x, apple.y, apple.size, apple.size);
+}
+
+function drawBody() {
+  for (let i = body.length - 1; i >= 0; i--) {
+    image(body[i].img, body[i].x, body[i].y, snake.size, snake.size);
+  }
+}
+
+function drawHead() {
+  image(headImgs[snake.dir], snake.x, snake.y, snake.size, snake.size);
 }
 
 function drawHUD() {
   fill(255);
   textAlign(LEFT, TOP);
   textSize(28);
-
   text("Score: " + score, 20, 20);
-  text("Health: " + health, 20, 55);
-  text("Level: " + level, 20, 90);
+
+  textSize(18);
+  text("Animation Test Build", 20, 58);
+  text("Eat apples to grow", 20, 82);
+  text("Press R to reset", 20, 106);
 }
 
 function isLeftDown() {
@@ -388,19 +313,4 @@ function isDownDown() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-
-  if (player) {
-    player.x = constrain(player.x, 30, width - 30);
-    player.y = constrain(player.y, 30, height - 30);
-  }
-
-  if (apple) {
-    apple.x = constrain(apple.x, 30, width - 30);
-    apple.y = constrain(apple.y, 30, height - 30);
-  }
-
-  if (burger) {
-    burger.x = constrain(burger.x, 35, width - 35);
-    burger.y = constrain(burger.y, 35, height - 35);
-  }
 }
