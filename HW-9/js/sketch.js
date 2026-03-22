@@ -1,5 +1,3 @@
-let canvas;
-
 let appleSprite;
 let burgerSprite;
 let obstacles;
@@ -43,7 +41,7 @@ function preload() {
 }
 
 function setup() {
-  canvas = createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth, windowHeight);
   imageMode(CENTER);
   textFont("Arial");
 
@@ -60,7 +58,7 @@ function setupKeyboard() {
     (e) => {
       keys[e.code] = true;
 
-      if (e.code === "Space" && gameState === "menu") {
+      if (gameState === "menu" && e.code === "Space") {
         startGame();
       }
 
@@ -93,8 +91,8 @@ function setupKeyboard() {
 }
 
 function clearKeys() {
-  for (let key in keys) {
-    keys[key] = false;
+  for (let k in keys) {
+    keys[k] = false;
   }
 }
 
@@ -212,10 +210,10 @@ function buildLevel() {
 }
 
 function createObstacle() {
-  let made = false;
   let tries = 0;
+  let placed = false;
 
-  while (!made && tries < 200) {
+  while (!placed && tries < 200) {
     tries++;
 
     let x = random(220, width - 220);
@@ -242,7 +240,7 @@ function createObstacle() {
       o.color = "gray";
       o.collider = "static";
       obstacles.add(o);
-      made = true;
+      placed = true;
     }
   }
 }
@@ -388,10 +386,7 @@ function checkApple() {
   if (d < 32) {
     score++;
 
-    let last = body.length > 0
-      ? body[body.length - 1]
-      : { x: snake.x, y: snake.y };
-
+    let last = body.length > 0 ? body[body.length - 1] : { x: snake.x, y: snake.y };
     body.push({
       x: last.x,
       y: last.y,
@@ -439,8 +434,8 @@ function animateSprites() {
 }
 
 function placeApple() {
-  let placed = false;
   let tries = 0;
+  let placed = false;
 
   while (!placed && tries < 200) {
     tries++;
@@ -461,9 +456,9 @@ function placeApple() {
     }
     if (onBody) continue;
 
-    placed = true;
     appleSprite.x = x;
     appleSprite.y = y;
+    placed = true;
   }
 
   if (!placed) {
@@ -473,8 +468,8 @@ function placeApple() {
 }
 
 function placeBurger() {
-  let placed = false;
   let tries = 0;
+  let placed = false;
 
   while (!placed && tries < 200) {
     tries++;
@@ -486,9 +481,9 @@ function placeBurger() {
     if (appleSprite && dist(x, y, appleSprite.x, appleSprite.y) < 120) continue;
     if (hitsObstacle(x, y, 26, 26)) continue;
 
-    placed = true;
     burgerSprite.x = x;
     burgerSprite.y = y;
+    placed = true;
   }
 
   if (!placed) {
