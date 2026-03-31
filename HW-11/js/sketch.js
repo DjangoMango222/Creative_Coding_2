@@ -21,12 +21,10 @@ function setup() {
     attackCooldown: 0
   };
 
-  // at least 5 good food items
   for (let i = 0; i < 5; i++) {
     foods.push(new Food());
   }
 
-  // bad objects / enemies
   for (let i = 0; i < 4; i++) {
     enemies.push(new Enemy());
   }
@@ -50,7 +48,6 @@ function draw() {
   handlePlayerMovement();
   updateAttackCooldown();
 
-  // draw and update player
   drawSnake();
 
   // good food
@@ -68,14 +65,12 @@ function draw() {
     enemies[i].update();
     enemies[i].show();
 
-    // enemy touches player = player takes damage
     if (dist(snake.x, snake.y, enemies[i].x, enemies[i].y) < (snake.size / 2 + enemies[i].size / 2)) {
       if (frameCount % 20 === 0) {
         playerHealth -= 1;
       }
     }
 
-    // remove enemy if dead
     if (enemies[i].health <= 0) {
       enemies.splice(i, 1);
     }
@@ -155,7 +150,6 @@ function attackEnemies() {
     if (d <= snake.attackRange) {
       enemies[i].health -= 1;
 
-      // particles appear only during attack event
       for (let j = 0; j < 12; j++) {
         particles.push(new Particle(enemies[i].x, enemies[i].y));
       }
@@ -209,7 +203,6 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-// -------------------- CLASSES --------------------
 
 class Food {
   constructor() {
