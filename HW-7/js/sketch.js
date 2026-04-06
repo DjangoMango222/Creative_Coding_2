@@ -42,6 +42,7 @@ function preload() {
 function setup() {
   createCanvas(800, 600);
   imageMode(CENTER);
+  rectMode(CORNER);
   textAlign(LEFT, TOP);
 
   for (let i = 0; i < 6; i++) {
@@ -53,7 +54,6 @@ function setup() {
   }
 
   currentFrames = idleFrames;
-
   moveFood();
   food.nextMoveTime = millis() + int(random(1000, 3000));
   startTime = millis();
