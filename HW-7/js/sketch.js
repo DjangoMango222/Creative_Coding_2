@@ -167,7 +167,7 @@ function checkCollection() {
     food.nextMoveTime = millis() + int(random(1000, 3000));
   }
 }
-
+// had to tweak collision distance a bit
 function updateTimer() {
   let elapsed = floor((millis() - startTime) / 1000);
   let timeLeft = gameLength - elapsed;
