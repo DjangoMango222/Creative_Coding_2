@@ -117,4 +117,14 @@ function draw() {
 
   push();
   translate(10, -90, 210);
-  r
+  rotateX(frameCount * 0.016);
+  rotateY(frameCount * 0.024);
+  specularMaterial(255, 170, 215);
+  shininess(85);
+  torus(42, 10);
+  pop();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
