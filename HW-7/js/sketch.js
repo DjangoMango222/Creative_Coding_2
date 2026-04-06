@@ -7,6 +7,7 @@ let currentFrames = [];
 
 let frameW = 90;
 let frameH = 96;
+
 let currentFrame = 0;
 let lastFrameTime = 0;
 let frameDelay = 120;
@@ -14,8 +15,8 @@ let frameDelay = 120;
 let player = {
   x: 400,
   y: 300,
-  w: 90,
-  h: 96,
+  w: 110,
+  h: 120,
   speed: 4,
   moving: false,
   facingRight: true
@@ -34,8 +35,8 @@ let startTime = 0;
 let gameOver = false;
 
 function preload() {
-  spriteSheet = loadImage("../images/holo_sheet.webp");
-  foodImg = loadImage("../images/food.png");
+  spriteSheet = loadImage("images/holo_sheet.png");
+  foodImg = loadImage("images/food.png");
 }
 
 function setup() {
@@ -43,12 +44,10 @@ function setup() {
   imageMode(CENTER);
   textAlign(LEFT, TOP);
 
-  // row 0 = idle
   for (let i = 0; i < 6; i++) {
     idleFrames.push(spriteSheet.get(i * frameW, 0, frameW, frameH));
   }
 
-  // row 2 = walk
   for (let i = 0; i < 8; i++) {
     walkFrames.push(spriteSheet.get(i * frameW, 2 * frameH, frameW, frameH));
   }
@@ -192,6 +191,7 @@ function drawHUD() {
 }
 
 function drawGameOver() {
+  noStroke();
   fill(0, 170);
   rect(0, 0, width, height);
 
