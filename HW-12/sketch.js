@@ -4,52 +4,45 @@ function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
   textFont('Georgia');
 
-  titleTexture = createGraphics(700, 220);
+  titleTexture = createGraphics(700, 160);
   titleTexture.clear();
-  titleTexture.background(18, 12, 40);
-
-  titleTexture.fill(40, 30, 80);
-  titleTexture.rect(10, 10, 680, 200, 18);
 
   titleTexture.fill(255);
   titleTexture.textAlign(CENTER, CENTER);
-
   titleTexture.textSize(40);
-  titleTexture.textStyle(BOLD);
-  titleTexture.text("DJ's 3D Creations", 350, 85);
-
-  titleTexture.textSize(26);
-  titleTexture.textStyle(NORMAL);
-  titleTexture.fill(220);
-  titleTexture.text("by Dj", 350, 145);
+  titleTexture.text("DJ's 3D Creations", 350, 80);
 }
 
 function draw() {
+    for (let i = 0; i < 30; i++) {
+  push();
+  translate(
+    random(-800, 800),
+    random(-800, 800),
+    random(-800, 800)
+  );
+  ambientMaterial(255);
+  sphere(2);
+  pop();
+    }
   background(6, 8, 25);
 
   orbitControl();
 
-  ambientLight(60, 60, 70);
+  ambientLight(60);
   directionalLight(255, 255, 255, -0.4, 0.6, -1);
   pointLight(160, 180, 255, 0, -120, 220);
   pointLight(255, 120, 180, -220, 80, 120);
 
   push();
-  translate(0, 170, 0);
-  rotateX(HALF_PI);
-  ambientMaterial(35, 45, 80);
-  plane(700, 700);
-  pop();
-
-  push();
   translate(0, -220, -120);
   rotateY(sin(frameCount * 0.01) * 0.2);
   texture(titleTexture);
-  plane(320, 100);
+  plane(300, 80);
   pop();
 
   push();
-  translate(0, 30, 0);
+  translate(0, 20, 0);
   rotateY(frameCount * 0.012);
   rotateX(frameCount * 0.008);
   specularMaterial(120, 220, 255);
