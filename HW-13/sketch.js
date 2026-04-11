@@ -36,9 +36,10 @@ function setup() {
   extras.push({
     type: 'ring',
     parentPlanet: 4,
-    width: 120,
-    height: 120,
-    tilt: 0.45
+    majorRadius: 62,
+    tubeRadius: 7,
+    tiltX: 1.15,
+    tiltZ: 0.22
   });
 
   extras.push({
@@ -58,6 +59,14 @@ function setup() {
     orbitSpeed: 0.012,
     angleOffset: random(TWO_PI),
     yOffset: -110
+  });
+
+  extras.push({
+    type: 'station',
+    parentPlanet: 2,
+    orbitRadius: 78,
+    orbitSpeed: 0.022,
+    angleOffset: random(TWO_PI)
   });
 }
 
@@ -111,7 +120,6 @@ function drawLabels() {
 
   fill(255);
   noStroke();
-
   textSize(30);
   text('Solar Drift', 24, 42);
 
@@ -185,10 +193,12 @@ function drawExtras() {
 
       push();
       translate(saturn.x, saturn.y, saturn.z);
-      rotateX(HALF_PI + e.tilt);
+      rotateX(e.tiltX);
+      rotateZ(e.tiltZ);
+      rotateY(frameCount * 0.003);
       noStroke();
       texture(ringTex);
-      plane(e.width, e.height);
+      torus(e.majorRadius, e.tubeRadius, 48, 18);
       pop();
     }
 
@@ -238,7 +248,57 @@ function drawExtras() {
       sphere(4, 8, 6);
       pop();
     }
+
+    if (e.type === 'station') {
+      let parent = planets[e.parentPlanet];
+      let angle = frameCount * e.orbitSpeed + e.angleOffset;
+
+      let x = parent.x + cos(angle) * e.orbitRadius;
+      let z = parent.z + sin(angle) * e.orbitRadius;
+      let y = parent.y + cos(angle * 1.3) * 10;
+
+      drawStation(x, y, z, angle);
+    }
   }
+}
+
+function drawStation(x, y, z, angle) {
+  push();
+  translate(x, y, z);
+  rotateY(-angle + HALF_PI);
+  rotateZ(sin(frameCount * 0.02) * 0.15);
+
+  noStroke();
+
+  push();
+  ambientMaterial(180);
+  box(22, 10, 10);
+  pop();
+
+  push();
+  ambientMaterial(120);
+  cylinder(2, 34, 12, 4);
+  pop();
+
+  push();
+  translate(-22, 0, 0);
+  ambientMaterial(70, 120, 210);
+  box(18, 1.5, 10);
+  pop();
+
+  push();
+  translate(22, 0, 0);
+  ambientMaterial(70, 120, 210);
+  box(18, 1.5, 10);
+  pop();
+
+  push();
+  translate(0, -8, 0);
+  ambientMaterial(210);
+  sphere(3, 10, 8);
+  pop();
+
+  pop();
 }
 
 function mouseClicked() {
@@ -252,6 +312,9 @@ function mouseClicked() {
   extras[2].orbitRadiusX = random(400, 520);
   extras[2].orbitRadiusZ = random(200, 320);
   extras[2].angleOffset = random(TWO_PI);
+
+  extras[3].orbitRadius = random(65, 95);
+  extras[3].angleOffset = random(TWO_PI);
 
   return false;
 }
