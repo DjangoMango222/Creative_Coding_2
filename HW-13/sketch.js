@@ -124,4 +124,201 @@ function drawLabels() {
   text('Solar Drift', 24, 42);
 
   textSize(18);
-  text
+  text('Django Behunin', 24, 70);
+
+  textSize(13);
+  text('Click to rearrange the planets', 24, 94);
+  pop();
+}
+
+function drawSun() {
+  push();
+  noStroke();
+  emissiveMaterial(255, 200, 90);
+  texture(sunTex);
+  rotateY(frameCount * 0.004);
+  sphere(58, 32, 24);
+  pop();
+
+  push();
+  noFill();
+  stroke(255, 180, 70, 35);
+  strokeWeight(3);
+  sphere(72, 20, 14);
+  pop();
+}
+
+function drawOrbitLines() {
+  push();
+  noFill();
+  stroke(130, 130, 180, 60);
+  strokeWeight(1);
+
+  for (let i = 0; i < planets.length; i++) {
+    push();
+    rotateX(HALF_PI);
+    ellipse(0, 0, planets[i].orbitRadius * 2, planets[i].orbitRadius * 2);
+    pop();
+  }
+
+  pop();
+}
+
+function drawPlanets() {
+  for (let i = 0; i < planets.length; i++) {
+    let p = planets[i];
+    let angle = frameCount * p.orbitSpeed + p.angleOffset;
+
+    p.x = cos(angle) * p.orbitRadius;
+    p.z = sin(angle) * p.orbitRadius;
+    p.y = p.yOffset;
+
+    push();
+    translate(p.x, p.y, p.z);
+    rotateY(frameCount * p.spinSpeed + p.spinOffset);
+    rotateX(frameCount * p.spinSpeed * 0.35);
+    noStroke();
+    texture(p.texture);
+    sphere(p.size, 28, 20);
+    pop();
+  }
+}
+
+function drawExtras() {
+  for (let i = 0; i < extras.length; i++) {
+    let e = extras[i];
+
+    if (e.type === 'ring') {
+      let saturn = planets[e.parentPlanet];
+
+      push();
+      translate(saturn.x, saturn.y, saturn.z);
+      rotateX(e.tiltX);
+      rotateZ(e.tiltZ);
+      rotateY(frameCount * 0.003);
+      noStroke();
+      texture(ringTex);
+      torus(e.majorRadius, e.tubeRadius, 48, 18);
+      pop();
+    }
+
+    if (e.type === 'moon') {
+      let parent = planets[e.parentPlanet];
+      let angle = frameCount * e.orbitSpeed + e.angleOffset;
+
+      let x = parent.x + cos(angle) * e.orbitRadius;
+      let z = parent.z + sin(angle) * e.orbitRadius;
+      let y = parent.y + sin(angle * 1.4) * 8;
+
+      push();
+      translate(x, y, z);
+      rotateY(frameCount * 0.02);
+      noStroke();
+      texture(moonTex);
+      sphere(e.size, 20, 16);
+      pop();
+    }
+
+    if (e.type === 'comet') {
+      let angle = frameCount * e.orbitSpeed + e.angleOffset;
+      let x = cos(angle) * e.orbitRadiusX;
+      let z = sin(angle) * e.orbitRadiusZ;
+      let y = e.yOffset + sin(frameCount * 0.02) * 24;
+
+      push();
+      translate(x, y, z);
+      rotateZ(-PI / 6);
+      rotateX(frameCount * 0.012);
+      noStroke();
+      texture(cometTex);
+      cone(e.size * 0.6, e.size * 2.5, 20, 10);
+      pop();
+
+      push();
+      translate(x - 28, y, z);
+      noStroke();
+      ambientMaterial(190, 225, 255);
+      sphere(6, 10, 8);
+      pop();
+
+      push();
+      translate(x - 55, y, z);
+      noStroke();
+      ambientMaterial(150, 200, 255);
+      sphere(4, 8, 6);
+      pop();
+    }
+
+    if (e.type === 'station') {
+      let parent = planets[e.parentPlanet];
+      let angle = frameCount * e.orbitSpeed + e.angleOffset;
+
+      let x = parent.x + cos(angle) * e.orbitRadius;
+      let z = parent.z + sin(angle) * e.orbitRadius;
+      let y = parent.y + cos(angle * 1.3) * 10;
+
+      drawStation(x, y, z, angle);
+    }
+  }
+}
+
+function drawStation(x, y, z, angle) {
+  push();
+  translate(x, y, z);
+  rotateY(-angle + HALF_PI);
+  rotateZ(sin(frameCount * 0.02) * 0.15);
+
+  noStroke();
+
+  push();
+  ambientMaterial(180);
+  box(22, 10, 10);
+  pop();
+
+  push();
+  ambientMaterial(120);
+  cylinder(2, 34, 12, 4);
+  pop();
+
+  push();
+  translate(-22, 0, 0);
+  ambientMaterial(70, 120, 210);
+  box(18, 1.5, 10);
+  pop();
+
+  push();
+  translate(22, 0, 0);
+  ambientMaterial(70, 120, 210);
+  box(18, 1.5, 10);
+  pop();
+
+  push();
+  translate(0, -8, 0);
+  ambientMaterial(210);
+  sphere(3, 10, 8);
+  pop();
+
+  pop();
+}
+
+function mouseClicked() {
+  for (let i = 0; i < planets.length; i++) {
+    planets[i].orbitRadius = random(90, 390);
+    planets[i].angleOffset = random(TWO_PI);
+    planets[i].yOffset = random(-90, 90);
+    planets[i].spinOffset = random(TWO_PI);
+  }
+
+  extras[2].orbitRadiusX = random(400, 520);
+  extras[2].orbitRadiusZ = random(200, 320);
+  extras[2].angleOffset = random(TWO_PI);
+
+  extras[3].orbitRadius = random(65, 95);
+  extras[3].angleOffset = random(TWO_PI);
+
+  return false;
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
