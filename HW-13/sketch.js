@@ -1,73 +1,167 @@
 let spaceTex;
 let sunTex;
-let planetTextures = [];
 let moonTex;
 let ringTex;
-let cometTex;
+let mercuryTex;
 
+let bodyTextures = {};
 let planets = [];
-let extras = [];
+let asteroids = [];
+let stationParts = [];
+
+let moonData;
+let cometData;
+let ringData;
+let stationData;
 
 function preload() {
   spaceTex = loadImage('assets/Space.jpg');
   sunTex = loadImage('assets/Sun.jpg');
-
-  planetTextures[0] = loadImage('assets/Mercury.jpg');
-  planetTextures[1] = loadImage('assets/Venus.jpg');
-  planetTextures[2] = loadImage('assets/Earth.jpg');
-  planetTextures[3] = loadImage('assets/Mars.jpg');
-  planetTextures[4] = loadImage('assets/Jupiter.jpg');
-
   moonTex = loadImage('assets/Moon.jpg');
   ringTex = loadImage('assets/Saturn_Ring.png');
-  cometTex = loadImage('assets/Mercury.jpg');
+  mercuryTex = loadImage('assets/Mercury.jpg');
+
+  bodyTextures.mercury = loadImage('assets/Mercury.jpg');
+  bodyTextures.venus = loadImage('assets/Venus.jpg');
+  bodyTextures.earth = loadImage('assets/Earth.jpg');
+  bodyTextures.mars = loadImage('assets/Mars.jpg');
+  bodyTextures.jupiter = loadImage('assets/Jupiter.jpg');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight, WEBGL);
   angleMode(RADIANS);
 
-  planets.push(makePlanet('Mercury', 95, 13, 0.020, planetTextures[0], -18));
-  planets.push(makePlanet('Venus', 145, 20, 0.015, planetTextures[1], 12));
-  planets.push(makePlanet('Earth', 205, 25, 0.011, planetTextures[2], -10));
-  planets.push(makePlanet('Mars', 275, 19, 0.008, planetTextures[3], 18));
-  planets.push(makePlanet('Jupiter', 360, 40, 0.005, planetTextures[4], -4));
+  planets = [
+    makePlanet('Mercury', 95, 13, 0.020, bodyTextures.mercury, -18),
+    makePlanet('Venus', 145, 20, 0.015, bodyTextures.venus, 12),
+    makePlanet('Earth', 205, 25, 0.011, bodyTextures.earth, -10),
+    makePlanet('Mars', 275, 19, 0.008, bodyTextures.mars, 18),
+    makePlanet('Jupiter', 360, 40, 0.005, bodyTextures.jupiter, -4)
+  ];
 
-  extras.push({
-    type: 'ring',
-    parentPlanet: 4,
-    majorRadius: 62,
-    tubeRadius: 7,
-    tiltX: 1.15,
-    tiltZ: 0.22
-  });
-
-  extras.push({
-    type: 'moon',
+  moonData = {
     parentPlanet: 2,
     orbitRadius: 48,
     size: 8,
     orbitSpeed: 0.050,
-    angleOffset: random(TWO_PI)
-  });
+    angleOffset: random(TWO_PI),
+    x: 0,
+    y: 0,
+    z: 0
+  };
 
-  extras.push({
-    type: 'comet',
+  cometData = {
     orbitRadiusX: 470,
     orbitRadiusZ: 255,
     size: 18,
     orbitSpeed: 0.012,
     angleOffset: random(TWO_PI),
-    yOffset: -110
-  });
+    yOffset: -110,
+    x: 0,
+    y: 0,
+    z: 0
+  };
 
-  extras.push({
-    type: 'station',
+  ringData = {
+    parentPlanet: 4,
+    majorRadius: 72,
+    tubeRadius: 4,
+    tiltX: 1.18,
+    tiltZ: 0.28
+  };
+
+  stationData = {
     parentPlanet: 2,
-    orbitRadius: 78,
-    orbitSpeed: 0.022,
-    angleOffset: random(TWO_PI)
-  });
+    orbitRadius: 95,
+    orbitSpeed: 0.018,
+    angleOffset: random(TWO_PI),
+    x: 0,
+    y: 0,
+    z: 0,
+    angle: 0
+  };
+
+  stationParts = [
+    {
+      shape: 'box',
+      tx: 0,
+      ty: 0,
+      tz: 0,
+      sx: 24,
+      sy: 10,
+      sz: 10,
+      material: [185]
+    },
+    {
+      shape: 'cylinder',
+      tx: 0,
+      ty: 0,
+      tz: 0,
+      radius: 2,
+      height: 40,
+      material: [130]
+    },
+    {
+      shape: 'box',
+      tx: -26,
+      ty: 0,
+      tz: 0,
+      sx: 24,
+      sy: 2,
+      sz: 12,
+      material: [70, 120, 220]
+    },
+    {
+      shape: 'box',
+      tx: 26,
+      ty: 0,
+      tz: 0,
+      sx: 24,
+      sy: 2,
+      sz: 12,
+      material: [70, 120, 220]
+    },
+    {
+      shape: 'sphere',
+      tx: 0,
+      ty: -10,
+      tz: 0,
+      radius: 4,
+      detailX: 10,
+      detailY: 8,
+      material: [220]
+    },
+    {
+      shape: 'box',
+      tx: 0,
+      ty: 10,
+      tz: 0,
+      sx: 8,
+      sy: 4,
+      sz: 8,
+      material: [160]
+    }
+  ];
+
+  let asteroidShapes = ['sphere', 'box', 'ellipsoid'];
+
+  for (let i = 0; i < 12; i++) {
+    asteroids.push({
+      orbitRadius: random(300, 345),
+      angleOffset: map(i, 0, 12, 0, TWO_PI) + random(-0.15, 0.15),
+      orbitSpeed: random(0.004, 0.007),
+      yOffset: random(-18, 18),
+      size: random(6, 12),
+      shape: random(asteroidShapes),
+      rotX: random(TWO_PI),
+      rotY: random(TWO_PI),
+      rotZ: random(TWO_PI),
+      spinX: random(0.005, 0.02),
+      spinY: random(0.005, 0.02),
+      spinZ: random(0.005, 0.02)
+    });
+  }
 }
 
 function makePlanet(name, orbitRadius, size, orbitSpeed, tex, yOffset) {
@@ -97,11 +191,45 @@ function draw() {
   directionalLight(110, 140, 200, -0.5, 0.3, -1);
 
   drawBackground();
+  updateBodies();
   drawLabels();
   drawSun();
   drawOrbitLines();
   drawPlanets();
-  drawExtras();
+  drawMoon();
+  drawAsteroidBelt();
+  drawRing();
+  drawComet();
+  drawStation();
+}
+
+function updateBodies() {
+  for (let i = 0; i < planets.length; i++) {
+    let p = planets[i];
+    let angle = frameCount * p.orbitSpeed + p.angleOffset;
+
+    p.x = cos(angle) * p.orbitRadius;
+    p.z = sin(angle) * p.orbitRadius;
+    p.y = p.yOffset;
+  }
+
+  let moonParent = planets[moonData.parentPlanet];
+  let moonAngle = frameCount * moonData.orbitSpeed + moonData.angleOffset;
+  moonData.x = moonParent.x + cos(moonAngle) * moonData.orbitRadius;
+  moonData.z = moonParent.z + sin(moonAngle) * moonData.orbitRadius;
+  moonData.y = moonParent.y + sin(moonAngle * 1.4) * 8;
+
+  let cometAngle = frameCount * cometData.orbitSpeed + cometData.angleOffset;
+  cometData.x = cos(cometAngle) * cometData.orbitRadiusX;
+  cometData.z = sin(cometAngle) * cometData.orbitRadiusZ;
+  cometData.y = cometData.yOffset + sin(frameCount * 0.02) * 24;
+
+  let stationParent = planets[stationData.parentPlanet];
+  let stationAngle = frameCount * stationData.orbitSpeed + stationData.angleOffset;
+  stationData.x = stationParent.x + cos(stationAngle) * stationData.orbitRadius;
+  stationData.z = stationParent.z + sin(stationAngle) * stationData.orbitRadius;
+  stationData.y = stationParent.y + cos(stationAngle * 1.3) * 12;
+  stationData.angle = stationAngle;
 }
 
 function drawBackground() {
@@ -167,11 +295,6 @@ function drawOrbitLines() {
 function drawPlanets() {
   for (let i = 0; i < planets.length; i++) {
     let p = planets[i];
-    let angle = frameCount * p.orbitSpeed + p.angleOffset;
-
-    p.x = cos(angle) * p.orbitRadius;
-    p.z = sin(angle) * p.orbitRadius;
-    p.y = p.yOffset;
 
     push();
     translate(p.x, p.y, p.z);
@@ -184,119 +307,118 @@ function drawPlanets() {
   }
 }
 
-function drawExtras() {
-  for (let i = 0; i < extras.length; i++) {
-    let e = extras[i];
+function drawMoon() {
+  push();
+  translate(moonData.x, moonData.y, moonData.z);
+  rotateY(frameCount * 0.02);
+  noStroke();
+  texture(moonTex);
+  sphere(moonData.size, 20, 16);
+  pop();
+}
 
-    if (e.type === 'ring') {
-      let saturn = planets[e.parentPlanet];
+function drawAsteroidBelt() {
+  for (let i = 0; i < asteroids.length; i++) {
+    let a = asteroids[i];
+    let angle = frameCount * a.orbitSpeed + a.angleOffset;
 
-      push();
-      translate(saturn.x, saturn.y, saturn.z);
-      rotateX(e.tiltX);
-      rotateZ(e.tiltZ);
-      rotateY(frameCount * 0.003);
-      noStroke();
-      texture(ringTex);
-      torus(e.majorRadius, e.tubeRadius, 48, 18);
-      pop();
+    let x = cos(angle) * a.orbitRadius;
+    let z = sin(angle) * a.orbitRadius;
+    let y = a.yOffset;
+
+    push();
+    translate(x, y, z);
+    rotateX(frameCount * a.spinX + a.rotX);
+    rotateY(frameCount * a.spinY + a.rotY);
+    rotateZ(frameCount * a.spinZ + a.rotZ);
+    noStroke();
+    texture(mercuryTex);
+
+    if (a.shape === 'sphere') {
+      sphere(a.size, 10, 8);
+    } else if (a.shape === 'box') {
+      box(a.size, a.size * 0.8, a.size * 1.2);
+    } else if (a.shape === 'ellipsoid') {
+      ellipsoid(a.size * 0.9, a.size * 0.6, a.size * 1.3, 10, 8);
     }
 
-    if (e.type === 'moon') {
-      let parent = planets[e.parentPlanet];
-      let angle = frameCount * e.orbitSpeed + e.angleOffset;
-
-      let x = parent.x + cos(angle) * e.orbitRadius;
-      let z = parent.z + sin(angle) * e.orbitRadius;
-      let y = parent.y + sin(angle * 1.4) * 8;
-
-      push();
-      translate(x, y, z);
-      rotateY(frameCount * 0.02);
-      noStroke();
-      texture(moonTex);
-      sphere(e.size, 20, 16);
-      pop();
-    }
-
-    if (e.type === 'comet') {
-      let angle = frameCount * e.orbitSpeed + e.angleOffset;
-      let x = cos(angle) * e.orbitRadiusX;
-      let z = sin(angle) * e.orbitRadiusZ;
-      let y = e.yOffset + sin(frameCount * 0.02) * 24;
-
-      push();
-      translate(x, y, z);
-      rotateZ(-PI / 6);
-      rotateX(frameCount * 0.012);
-      noStroke();
-      texture(cometTex);
-      cone(e.size * 0.6, e.size * 2.5, 20, 10);
-      pop();
-
-      push();
-      translate(x - 28, y, z);
-      noStroke();
-      ambientMaterial(190, 225, 255);
-      sphere(6, 10, 8);
-      pop();
-
-      push();
-      translate(x - 55, y, z);
-      noStroke();
-      ambientMaterial(150, 200, 255);
-      sphere(4, 8, 6);
-      pop();
-    }
-
-    if (e.type === 'station') {
-      let parent = planets[e.parentPlanet];
-      let angle = frameCount * e.orbitSpeed + e.angleOffset;
-
-      let x = parent.x + cos(angle) * e.orbitRadius;
-      let z = parent.z + sin(angle) * e.orbitRadius;
-      let y = parent.y + cos(angle * 1.3) * 10;
-
-      drawStation(x, y, z, angle);
-    }
+    pop();
   }
 }
 
-function drawStation(x, y, z, angle) {
-  push();
-  translate(x, y, z);
-  rotateY(-angle + HALF_PI);
-  rotateZ(sin(frameCount * 0.02) * 0.15);
+function drawRing() {
+  let saturn = planets[ringData.parentPlanet];
 
+  push();
+  translate(saturn.x, saturn.y, saturn.z);
+  rotateX(ringData.tiltX);
+  rotateZ(ringData.tiltZ);
+  rotateY(frameCount * 0.003);
   noStroke();
 
   push();
-  ambientMaterial(180);
-  box(22, 10, 10);
+  texture(ringTex);
+  torus(ringData.majorRadius, ringData.tubeRadius, 64, 20);
   pop();
 
   push();
-  ambientMaterial(120);
-  cylinder(2, 34, 12, 4);
+  ambientMaterial(210, 180, 120);
+  torus(ringData.majorRadius + 2, 1.3, 64, 12);
+  pop();
+
+  pop();
+}
+
+function drawComet() {
+  push();
+  translate(cometData.x, cometData.y, cometData.z);
+  rotateZ(-PI / 6);
+  rotateX(frameCount * 0.012);
+  noStroke();
+  texture(mercuryTex);
+  cone(cometData.size * 0.6, cometData.size * 2.5, 20, 10);
   pop();
 
   push();
-  translate(-22, 0, 0);
-  ambientMaterial(70, 120, 210);
-  box(18, 1.5, 10);
+  translate(cometData.x - 28, cometData.y, cometData.z);
+  noStroke();
+  ambientMaterial(190, 225, 255);
+  sphere(6, 10, 8);
   pop();
 
   push();
-  translate(22, 0, 0);
-  ambientMaterial(70, 120, 210);
-  box(18, 1.5, 10);
+  translate(cometData.x - 55, cometData.y, cometData.z);
+  noStroke();
+  ambientMaterial(150, 200, 255);
+  sphere(4, 8, 6);
   pop();
+}
 
+function drawStation() {
   push();
-  translate(0, -8, 0);
-  ambientMaterial(210);
-  sphere(3, 10, 8);
-  pop();
+  translate(stationData.x, stationData.y, stationData.z);
+  rotateY(-stationData.angle + HALF_PI);
+  rotateZ(sin(frameCount * 0.02) * 0.12);
+  scale(1.5);
+  noStroke();
+
+  for (let i = 0; i < stationParts.length; i++) {
+    let part = stationParts[i];
+
+    push();
+    translate(part.tx, part.ty, part.tz);
+    ambientMaterial(...part.material);
+
+    if (part.shape === 'box') {
+      box(part.sx, part.sy, part.sz);
+    } else if (part.shape === 'cylinder') {
+      cylinder(part.radius, part.height, 12, 4);
+    } else if (part.shape === 'sphere') {
+      sphere(part.radius, part.detailX, part.detailY);
+    }
+
+    pop();
+  }
 
   pop();
 }
@@ -309,12 +431,20 @@ function mouseClicked() {
     planets[i].spinOffset = random(TWO_PI);
   }
 
-  extras[2].orbitRadiusX = random(400, 520);
-  extras[2].orbitRadiusZ = random(200, 320);
-  extras[2].angleOffset = random(TWO_PI);
+  for (let i = 0; i < asteroids.length; i++) {
+    asteroids[i].orbitRadius = random(295, 350);
+    asteroids[i].angleOffset = random(TWO_PI);
+    asteroids[i].yOffset = random(-20, 20);
+  }
 
-  extras[3].orbitRadius = random(65, 95);
-  extras[3].angleOffset = random(TWO_PI);
+  moonData.angleOffset = random(TWO_PI);
+
+  cometData.orbitRadiusX = random(400, 520);
+  cometData.orbitRadiusZ = random(200, 320);
+  cometData.angleOffset = random(TWO_PI);
+
+  stationData.orbitRadius = random(80, 110);
+  stationData.angleOffset = random(TWO_PI);
 
   return false;
 }
