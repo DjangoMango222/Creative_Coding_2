@@ -1,0 +1,5 @@
+For my final project, I created a Unity interactive game that brings together many of the main concepts covered throughout the course. My project uses player controls, GameObjects, scripts, collisions, obstacles, health, score/state changes, visual feedback, audio feedback, and a complete game flow with a beginning, gameplay section, and ending.
+
+This project connects especially to the Unity modules from Weeks 14 and 15, where we covered the Unity interface, adding functionality, obstacles and collision, health, conditionals, loading levels, and building the project. It also connects to earlier programming concepts from the p5.js units, including variables, conditionals, loops, events, arrays, objects/classes, collision, sound, and game logic.
+
+I expanded and polished systems from earlier homework into a more complete final project. The player can interact with the environment, collect items, avoid hazards, lose health, and reach a win condition. My goal was to create a complete playable experience that shows effort, iteration, and integration of the course concepts.
